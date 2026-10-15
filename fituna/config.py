@@ -31,8 +31,8 @@ class GPUVendor(str, Enum):
 @dataclass(frozen=True)
 class HardwareProfile:
     gpu_vendor: GPUVendor
-    gpu_name: Optional[str]  # 없으면 None
-    vram_mb: Optional[int]  # 없으면 None
+    gpu_name: Optional[str]  # None if unavailable
+    vram_mb: Optional[int]  # None if unavailable
     cpu_cores: int
     ram_mb: int
     os_name: str  # "linux" | "darwin" | "windows"
@@ -40,13 +40,13 @@ class HardwareProfile:
 
 @dataclass(frozen=True)
 class TargetSpec:
-    model_path: Path  # .gguf 파일 또는 HF 포맷 디렉토리
-    target_tokens_per_sec: float  # generation(tg) 기준 목표 속도
-    max_quality_loss_pct: float  # baseline 대비 perplexity 증가 허용 상한(%)
-    prompt_tokens: int = 512  # bench용 pp 길이
-    gen_tokens: int = 128  # bench용 tg 길이
-    ctx: int = 4096  # 필요 컨텍스트 길이(주 탐색 기준값)
-    ctx_candidates: tuple[int, ...] = (4096,)  # 다중 지정 시 각각 검증, ctx가 그중 하나로 강제 포함
+    model_path: Path  # .gguf file or HF-format directory
+    target_tokens_per_sec: float  # target speed, measured on generation (tg)
+    max_quality_loss_pct: float  # max allowed perplexity increase over baseline (%)
+    prompt_tokens: int = 512  # prompt (pp) length for bench
+    gen_tokens: int = 128  # generation (tg) length for bench
+    ctx: int = 4096  # required context length (primary search value)
+    ctx_candidates: tuple[int, ...] = (4096,)  # each one is verified; always includes ctx
     quant_candidates: tuple[str, ...] = (
         "Q8_0",
         "Q6_K",
@@ -54,15 +54,15 @@ class TargetSpec:
         "Q4_K_M",
         "Q3_K_M",
         "Q2_K",
-    )  # 품질 내림차순 고정 순서
-    ngl_max_calls: int = 6  # ngl 이진탐색 상한 호출 수(안전장치)
-    max_bench_seconds: Optional[int] = None  # 전체 탐색 시간 예산, 초과 시 best-effort 반환
-    # llama-perplexity에 넘길 --chunks 상한. 실측 결과: 3B 모델+wikitext-2 test
-    # 전체(제한 없음)로 quant 4개 돌리니 3시간 44분 걸림 -- 품질손실 %는 통계적
-    # 추정치일 뿐이라 전체 코퍼스가 필요하지 않음. None(무제한)을 기본값으로
-    # 두면 사용자가 아무 것도 모른 채 몇 시간짜리 실행을 돌리게 되므로, 기본을
-    # 유한한 값으로 못박는다. 더 엄밀한 평가가 필요하면 명시적으로 None이나
-    # 큰 값을 넘기면 된다.
+    )  # fixed order, highest quality first
+    ngl_max_calls: int = 6  # cap on ngl binary-search calls (safety limit)
+    max_bench_seconds: Optional[int] = None  # total search time budget; best-effort when exceeded
+    # Upper bound for llama-perplexity --chunks. Measured: a 3B model on the
+    # full wikitext-2 test set (no limit) took 3 h 44 min for 4 quants. The
+    # quality-loss % is only a statistical estimate, so the full corpus is not
+    # needed. A None (unlimited) default would start an hours-long run without
+    # the user knowing, so the default is pinned to a finite value. Pass None
+    # or a larger value explicitly when a more rigorous evaluation is needed.
     ppl_chunks: Optional[int] = 32
     quality_metric: str = "ppl"  # "ppl" | "kld"
 
@@ -90,7 +90,7 @@ class BinaryPaths:
     llama_bench: Path
     llama_perplexity: Path
     llama_imatrix: Optional[Path] = None
-    convert_script: Optional[Path] = None  # HF->GGUF 변환용 (llama.cpp 저장소 내 스크립트)
+    convert_script: Optional[Path] = None  # for HF->GGUF conversion (script in the llama.cpp repo)
 
 
 @dataclass(frozen=True)
@@ -98,7 +98,7 @@ class ModelInfo:
     architecture: str
     n_layers: int
     n_params: int
-    base_gguf_path: Path  # 양자화 기준 원본(F16/F32) GGUF
+    base_gguf_path: Path  # source F16/F32 GGUF that candidates are quantized from
     # GGUF 'general.file_type' (llama.cpp LLAMA_FTYPE enum). 0=F32, 1=F16,
     # 32=BF16; anything else means the file is already quantized. None when
     # the writer didn't set the key.
@@ -131,7 +131,7 @@ class BaseLogitsResult:
 
 @dataclass(frozen=True)
 class QualityResult:
-    candidate_quant: str  # quality는 quant에만 의존(ngl/ctx 무관)
+    candidate_quant: str  # quality depends only on quant, not on ngl/ctx
     perplexity: float
     baseline_perplexity: float
     quality_loss_pct: float  # (perplexity-baseline)/baseline*100
@@ -145,12 +145,12 @@ class SearchResult:
     bench: BenchResult
     quality: QualityResult
     gguf_path: Path
-    run_command: list[str]  # 사용자가 그대로 실행 가능한 llama-cli 커맨드
-    meets_target: bool  # False면 best-effort(목표 미달) 결과
-    # 아래 두 필드는 나중에 추가된 것이라 기본값 None을 갖는다(기존 생성자
-    # 호출 호환). 산출물(gguf)을 실제로 쓰는 두 경로:
-    llama_server_command: Optional[list[str]] = None  # OpenAI 호환 로컬 API 서버 커맨드
-    modelfile_path: Optional[Path] = None  # --export-ollama로 쓴 Modelfile, 미생성 시 None
+    run_command: list[str]  # llama-cli command the user can run as-is
+    meets_target: bool  # False means a best-effort result (target not met)
+    # The two fields below were added later, so they default to None (keeps
+    # existing constructor calls working). Two ways to use the GGUF artifact:
+    llama_server_command: Optional[list[str]] = None  # OpenAI-compatible local API server command
+    modelfile_path: Optional[Path] = None  # Modelfile from --export-ollama, else None
     base_logits_path: Optional[Path] = None
     base_logits_size_bytes: Optional[int] = None
 
