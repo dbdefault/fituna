@@ -460,7 +460,8 @@ Five findings, ordered by how much they change the conclusion:
   result figures.** With this run's `--max-quality-loss 5`, Korean Q4_K_M has
   2.42 percentage points of headroom at 32 chunks and 0.92 at 128 chunks. With
   the same file, corpus, and gate, quadrupling the evidence reduces headroom to
-  1/4. A PASS with a small chunk count is a PASS only at that count.
+  about 38% (roughly 2/5). A PASS with a small chunk count is a PASS only at
+  that count.
   When a candidate is close to budget, increase chunks and remeasure before
   trusting the verdict.
 

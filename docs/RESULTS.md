@@ -410,9 +410,9 @@ llama-perplexity -m out/...-3e6680866409-Q6_K.gguf -f kowiki-corpus.txt --chunks
   0.434, 오차 ±0.17). **따라서 판정도 결과 수치뿐 아니라 `--ppl-chunks`에
   따라 달라집니다.** 이 실행의 `--max-quality-loss 5`에서 Q4_K_M 한국어
   여유는 32 chunk 2.42%p, 128 chunk 0.92%p입니다. 같은 파일·corpus·gate에
-  근거를 네 배로 늘리자 여유가 4분의 1이 됐습니다. 작은 chunk 수의 PASS는 그
-  chunk 수에서만 PASS입니다. 후보가 예산 근처라면 chunk를 늘려 다시 측정한 뒤
-  판정을 신뢰하세요.
+  근거를 네 배로 늘리자 여유가 약 38%(5분의 2 정도)로 줄었습니다. 작은 chunk
+  수의 PASS는 그 chunk 수에서만 PASS입니다. 후보가 예산 근처라면 chunk를 늘려
+  다시 측정한 뒤 판정을 신뢰하세요.
 
 ### 조회표가 알 수 없는 것
 
