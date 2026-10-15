@@ -55,6 +55,8 @@
   `# Copyright (c) 2026 FiTuna contributors` 줄을 넣었습니다. 빠져 있던
   `tests/test_mcp_server.py`의 SPDX tag도 추가했고, `tests/test_license_headers.py`가 두 줄을
   검사합니다. 줄이 하나씩 밀려 문서의 `file.py:NNN` 인용도 1씩 옮겼습니다.
+- **`fituna/config.py`의 한국어 주석을 영어로 옮김** — 영어 주석·docstring으로 통일하는 #75에서
+  메인테이너 몫으로 남겨 둔 부분입니다. 주석만 바꿔 코드와 줄 번호는 그대로입니다.
 - **README 로드맵 항목에 추적 이슈 링크 추가**([#72](https://github.com/leeyunseokarchive/fituna/pull/72), @kittu181707, #70).
 
 ## [0.3.6] — 2026-10-07
