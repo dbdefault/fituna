@@ -42,6 +42,12 @@
   서로 링크하고 영어 README의 개발 가이드 링크가 영어판을 가리킵니다([#84](https://github.com/leeyunseokarchive/fituna/pull/84), @amarjithkumar2007-wq, #38 일부).
 - **`docs/USE_CASES.en.md` 추가** — 사용 시나리오 문서의 영어 번역입니다. 한국어 원문과
   서로 링크하고 영어 README의 시나리오 링크가 영어판을 가리킵니다([#85](https://github.com/leeyunseokarchive/fituna/pull/85), @amarjithkumar2007-wq, #38 일부).
+- **`docs/RESULTS.en.md` 추가** — 실측 결과 문서의 영어 번역입니다. 한국어 원문과 서로
+  링크하고 영어 README, `DEVELOPMENT.en.md`, `USE_CASES.en.md`의 결과 링크가 영어판을
+  가리킵니다. 이로써 #38의 문서 4개 번역을 마쳤습니다([#87](https://github.com/leeyunseokarchive/fituna/pull/87), @amarjithkumar2007-wq, #38).
+- **실측 결과 문서의 여유 감소 비율 정정** — "chunk를 네 배로 늘리자 Q4_K_M 한국어 여유가
+  4분의 1이 됐다"는 문장을 실제 값(2.42%p → 0.92%p, 약 38%)에 맞게 고쳤습니다. 측정값과
+  판정은 바뀌지 않습니다. 한국어판과 영어판을 함께 고쳤습니다.
 - **번역 문서의 언어 링크 문구 통일, 개발 문서의 Python 3.13 설명 정정** — 번역 문서 맨 위
   링크를 아키텍처 문서와 같은 `English version` / `한국어 원문`으로 맞췄습니다. "3.13은 현재
   릴리스"라는 문장은 CI가 검증하는 최신 버전이자 PyPI 릴리스 빌드 버전이라는 뜻으로 고쳤습니다.
