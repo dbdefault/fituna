@@ -65,7 +65,7 @@ from fituna.errors import BinaryNotFoundError, FiTunaError, NoFeasibleConfigErro
 logger = logging.getLogger("fituna")
 
 # Canonical quality-descending quant order, reused (not re-hardcoded) from
-# TargetSpec.quant_candidates' documented default ("품질 내림차순 고정 순서").
+# TargetSpec.quant_candidates' documented default ("fixed order, highest quality first").
 _QUANT_QUALITY_ORDER: tuple[str, ...] = next(
     f.default for f in fields(TargetSpec) if f.name == "quant_candidates"
 )
